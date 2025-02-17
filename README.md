@@ -2,7 +2,8 @@
 
 Kaggle Notebook: https://www.kaggle.com/code/nataliecheong/ovarian-cancer-detection
 
-Citation:
+# Citation:
+
 www.kaggle.com/competitions/UBC-OCEAN/overview/how-to-cite-this-challenge-in-publications
 
 (1) Asadi-Aghbolaghi, M.; Farahani, H.; Zhang, A.; Akbari, A.; Kim, S.; Chow, A.; Dane, S.; Consortium, O. C.; Consortium, O.; Huntsman, D. G.; Gilks, C. B.; Ramus, S.; Köbel, M.; Karnezis, A. N.; Bashashati, A. Machine Learning-Driven Histotype Diagnosis of Ovarian Carcinoma: Insights from the OCEAN AI Challenge. medRxiv2024. https://doi.org/10.1101/2024.04.19.24306099.
