@@ -24,6 +24,7 @@ from imblearn.pipeline import Pipeline
 from torch.utils.data import WeightedRandomSampler
 from tqdm import tqdm
 import PIL.Image
+from utils import create_transforms
 import gc
 import warnings
 warnings.filterwarnings("ignore")
@@ -168,34 +169,6 @@ class EnhancedPreprocessor:
             # Return resized original image as fallback
             return cv2.resize(image, self.target_size, interpolation=cv2.INTER_AREA)
 
-def create_transforms(image_size: Tuple[int, int] = (224, 224), stain_augment_prob: float = 0.5):
-    """Create augmentation transforms with advanced techniques"""
-    train_transform = A.Compose([
-        A.Resize(height=image_size[0], width=image_size[1], always_apply=True),
-        # Color augmentations
-        A.OneOf([
-            A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1, p=1.0),
-            A.RandomGamma(p=1.0)
-        ], p=0.5),
-        # Geometric augmentations
-        A.OneOf([
-            A.ElasticTransform(p=0.5),
-            A.GridDistortion(p=0.5),
-            A.OpticalDistortion(p=0.5)
-        ], p=0.3),
-        # Cutout augmentation
-        A.CoarseDropout(max_holes=8, max_height=16, max_width=16, p=0.5),
-        # Basic transforms
-        A.HorizontalFlip(p=0.5),
-        A.VerticalFlip(p=0.5),
-        A.RandomRotate90(p=0.5)
-    ])
-
-    val_transform = A.Compose([
-        A.Resize(height=image_size[0], width=image_size[1], always_apply=True)
-    ])
-
-    return train_transform, val_transform
 
 class HistoDataset(Dataset):
     """Enhanced dataset with robust preprocessing"""
