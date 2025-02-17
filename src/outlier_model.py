@@ -255,3 +255,59 @@ class OutlierHistoPathModel(nn.Module):
 
     def __del__(self):
         torch.cuda.empty_cache()
+
+class OutlierLoss(nn.Module):
+    """Combined loss for classification and outlier detection"""
+    def __init__(self, num_classes=5, outlier_weight=0.1):
+        super().__init__()
+        self.ce_loss = nn.CrossEntropyLoss()
+        self.outlier_weight = outlier_weight
+        
+    def forward(self, logits, mean, log_var, labels):
+        # Classification loss
+        ce_loss = self.ce_loss(logits, labels)
+        
+        # Feature distribution regularization
+        kl_loss = -0.5 * torch.mean(1 + log_var - mean.pow(2) - log_var.exp())
+        
+        # Combined loss
+        total_loss = ce_loss + self.outlier_weight * kl_loss
+        
+        return total_loss, ce_loss, kl_loss
+
+
+def create_outlier_model(device, learning_rate=5e-4, epochs=30):
+    """Create model with outlier detection capabilities"""
+    model = OutlierHistoPathModel(num_classes=5)
+    model = model.to(device)
+    
+    # Create predictor configuration
+    wsi_config = IOPatchPredictorConfig(
+        input_resolutions=[{"units": "mpp", "resolution": 0.5}],
+        patch_input_shape=[224, 224],
+        stride_shape=[224, 224]
+    )
+    
+    # Create patch predictor
+    predictor = PatchPredictor(
+        model=model,
+        batch_size=32,
+        num_loader_workers=4
+    )
+    
+    # Combined loss function
+    criterion = OutlierLoss(num_classes=5)
+    
+    # Optimizer
+    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
+    
+    # Learning rate scheduler
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(
+        optimizer,
+        max_lr=learning_rate,
+        steps_per_epoch=28,
+        epochs=epochs,
+        pct_start=0.3
+    )
+    
+    return model, criterion, optimizer, scheduler, predictor, wsi_config
